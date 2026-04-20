@@ -1,0 +1,816 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Terpadu - Darul Abror IBS</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary-sky: #0ea5e9;
+            --dark-sky: #0369a1;
+            --accent-yellow: #facc15;
+            --light-sky: #f0f9ff;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            color: #334155;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+        }
+
+        .nav-link {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #e0f2fe;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(250, 204, 21, 0.1);
+            color: #facc15;
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #facc15;
+            border-left: 4px solid #facc15;
+            font-weight: 800;
+        }
+
+        .card-stat {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        #login-page {
+            background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 50%, #facc15 100%);
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            .sidebar { display: none !important; }
+            main { margin-left: 0 !important; padding: 20px !important; }
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0369a1;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .badge-doc {
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .form-section-title {
+            @apply text-[11px] font-black text-sky-700 bg-sky-50 px-4 py-2 rounded-lg uppercase tracking-widest mb-4 mt-6 flex items-center gap-2;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="login-page" 
+     class="fixed inset-0 z-[999] flex items-center justify-center p-6" 
+     style="background-image: url('bg.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="w-full max-w-md bg-gradient-to-br from-[#FFCFCF] to-[#AFFFD7] rounded-[3rem] p-12 shadow-2xl text-center border-2 border-white/50">
+        <img src="favicon.png" alt="Logo" class="w-32 h-32 mx-auto mb-8 drop-shadow-[0_10px_15px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform">
+        <h1 class="text-3xl font-black text-sky-900 uppercase tracking-tighter mb-1">Portal Admin</h1>
+        <p class="text-[11px] text-sky-600 font-bold uppercase tracking-[0.2em] mb-10">Darul Abror IBS</p>
+            
+            <form id="login-form" class="space-y-4">
+                <div class="relative">
+                    <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-sky-300"></i>
+                    <input type="text" id="username" placeholder="Email Admin" class="w-full bg-sky-50 border-2 border-sky-100 rounded-2xl py-4 pl-12 pr-6 focus:border-yellow-400 outline-none font-bold transition-all">
+                </div>
+                <div class="relative">
+                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-sky-300"></i>
+                    <input type="password" id="password" placeholder="Kata Sandi" class="w-full bg-sky-50 border-2 border-sky-100 rounded-2xl py-4 pl-12 pr-6 focus:border-yellow-400 outline-none font-bold transition-all">
+                </div>
+                <p id="login-error" class="text-red-500 text-[10px] font-black uppercase hidden"></p>
+                <button type="submit" id="login-btn" style="background-color: #0e45e9 !important; color: white !important;" class="w-full text-white font-black py-5 rounded-2xl shadow-xl shadow-sky-200 uppercase tracking-widest hover:opacity-90 transition-all border-b-4 border-blue-800">MASUK SISTEM</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden flex min-h-screen">
+        <aside class="sidebar w-72 fixed inset-y-0 left-0 z-50 hidden md:flex flex-col no-print shadow-xl">
+            <div class="p-8">
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="w-16 h-16 flex items-center justify-center p-0">
+                        <img src="favicon.png" alt="Logo" class="w-full h-full object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)]">
+                    </div>
+                    <div>
+                        <h2 class="font-black text-white text-base leading-tight uppercase tracking-tight">Darul Abror</h2>
+                        <p class="text-[9px] text-yellow-300 font-bold opacity-90 uppercase tracking-widest">Arsip Digital IBS</p>
+                    </div>
+                </div>
+
+                <nav class="space-y-1">
+                    <p class="text-[10px] font-bold text-sky-200 uppercase tracking-widest mb-4 px-4 opacity-70">Peserta Didik</p>
+                    <button onclick="switchTab('siswa')" id="btn-siswa" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg active text-sm mb-4">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Data Siswa</span>
+                    </button>
+                    <button onclick="switchTab('guru')" id="btn-guru" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm mb-1">
+                        <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                        <span>Data Guru</span>
+                    </button>
+                    <button onclick="switchTab('guru_asrama')" id="btn-guru_asrama" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm mb-1">
+                        <i data-lucide="home" class="w-4 h-4 text-yellow-300"></i>
+                        <span>Guru Asrama</span>
+                    </button>
+                    <button onclick="switchTab('staf')" id="btn-staf" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm mb-4">
+                        <i data-lucide="user-cog" class="w-4 h-4"></i>
+                        <span>Staf & Tenaga Lainnya</span>
+                    </button>
+                    <p class="text-[10px] font-bold text-sky-200 uppercase tracking-widest mb-2 px-4 opacity-70">Manajemen Umum</p>
+                    <button onclick="switchTab('arsip')" id="btn-arsip" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm mb-1">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <span>Administrasi Surat</span>
+                    </button>
+                    <button onclick="switchTab('inventaris')" id="btn-inventaris" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm mb-4">
+                        <i data-lucide="package" class="w-4 h-4"></i>
+                        <span>Sarana Prasarana</span>
+                    </button>
+                    
+                    <div class="pt-4 border-t border-white/10">
+                        <button onclick="switchTab('laporan')" id="btn-laporan" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                            <span>Laporan Berkala</span>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="mt-auto p-6 bg-black/20">
+                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all uppercase">
+                    <i data-lucide="log-out" class="w-4 h-4 text-yellow-400"></i> Keluar Sesi
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 md:ml-72 min-h-screen">
+            <div class="header-gradient border-b border-slate-200 px-8 py-6 no-print sticky top-0 z-40 shadow-sm bg-white">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1 text-[10px] font-bold text-sky-600 uppercase tracking-widest">
+                            <i data-lucide="layout-dashboard" class="w-3 h-3 text-yellow-500"></i>
+                            <span id="breadcrumb-text">Peserta Didik</span>
+                        </div>
+                        <h1 id="page-title" class="text-2xl font-black text-slate-800 tracking-tight tracking-tighter uppercase">Data Siswa</h1>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportToExcel()" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all text-[10px] shadow-sm">
+                            <i data-lucide="download" class="w-4 h-4 text-white"></i>
+                            Unduh Excel
+                        </button>
+
+                        <label class="cursor-pointer flex items-center gap-2 px-4 py-2.5 bg-slate-700 text-white rounded-xl font-bold hover:bg-slate-800 transition-all text-[10px] shadow-sm">
+                            <i data-lucide="upload-cloud" class="w-4 h-4 text-yellow-300"></i>
+                            Impor Excel
+                            <input type="file" class="hidden" accept=".xlsx, .xls" onchange="uploadExcel(this.files[0])">
+                        </label>
+
+                        <button id="btn-add" onclick="openModal()" class="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all shadow-lg shadow-amber-200 text-[10px]">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
+                            Tambah Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 no-print"></div>
+
+                <div id="laporan-section" class="hidden space-y-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2 uppercase text-xs tracking-widest">
+                                <span class="w-1.5 h-5 bg-sky-500 rounded-full"></span>
+                                Grafik Data Masuk
+                            </h3>
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2 uppercase text-xs tracking-widest">
+                                <span class="w-1.5 h-5 bg-yellow-500 rounded-full"></span>
+                                Kondisi Inventaris
+                            </h3>
+                            <div class="max-w-[280px] mx-auto">
+                                <canvas id="inventoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="table-section" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-8 py-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/30 no-print">
+                        <div class="flex items-center gap-3">
+                            <div id="sync-status" class="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse"></div>
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-widest">Database Cloud Terhubung</span>
+                        </div>
+                        <div class="relative w-full md:w-96">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="search-input" onkeyup="filterData()" placeholder="Cari nama, nomor identitas, atau keterangan..." class="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all">
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left" id="main-table">
+                            <thead class="table-header">
+                                <tr id="table-head"></tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="empty-state" class="hidden flex flex-col items-center py-32 bg-white text-center">
+                        <i data-lucide="database" class="w-16 h-16 text-slate-200 mb-4"></i>
+                        <h4 class="text-slate-500 font-bold">Data Belum Tersedia</h4>
+                        <p class="text-slate-400 text-xs mt-1">Silakan tambahkan data baru.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-md no-print">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-4xl shadow-2xl overflow-hidden border border-white/20">
+            <div class="bg-sky-50 border-b border-sky-100 p-6 flex justify-between items-center">
+                <div>
+                    <h3 id="modal-title" class="text-xl font-black text-sky-900 uppercase tracking-tighter">Formulir Data</h3>
+                    <p class="text-[10px] text-yellow-600 font-bold uppercase tracking-widest mt-1">Input Data Darul Abror</p>
+                </div>
+                <button onclick="closeModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yellow-200 text-yellow-600 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="main-form" class="p-8 space-y-4 overflow-y-auto max-h-[80vh]">
+                <input type="hidden" id="edit-id">
+                <div id="form-fields" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                
+                <div id="upload-progress-container" class="hidden">
+                    <div class="flex justify-between text-[10px] font-bold uppercase text-sky-600 mb-1">
+                        <span>Sedang Mengunggah Berkas...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div id="progress-bar" class="bg-sky-600 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="pt-6 flex gap-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-4 border border-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-slate-50 transition-all text-xs uppercase tracking-widest">Batal</button>
+                    <button type="submit" id="save-btn" class="flex-[2] py-4 bg-sky-600 text-white font-bold rounded-2xl hover:bg-sky-700 transition-all shadow-lg shadow-sky-200 flex justify-center items-center gap-2 text-xs uppercase tracking-widest">
+                        <i data-lucide="cloud-upload" class="w-4 h-4 text-yellow-300"></i>
+                        Simpan Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyByxrUqG8wM88BRqXCGTk2gfDNPEiXOIyM",
+            authDomain: "arsip-darul-abror-ibs.firebaseapp.com",
+            projectId: "arsip-darul-abror-ibs",
+            storageBucket: "arsip-darul-abror-ibs.appspot.com",
+            messagingSenderId: "834068984283",
+            appId: "1:834068984283:web:2c89cde3b6b7375fc5f7fe"
+        };
+
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+
+        window.currentTab = 'siswa';
+        window.appData = { siswa: [], guru: [], staf: [], arsip: [], inventaris: [] };
+
+        const gajiOptions = [
+            '- Pilih Rentang Penghasilan -', 'Kurang dari 1jt', '1jt - 2.5jt', '2.5jt - 5jt', '5jt - 7.5jt', '7.5jt - 10jt', '10jt ke atas'
+        ];
+
+        const config = {
+    siswa: { 
+        label: 'Siswa', 
+        headers: ['NISN', 'NIPD','Nama Lengkap', 'Kelas', 'Tahun Masuk','Tahun Keluar','Arsip Digital'], 
+        fields: [
+            {section: 'Identitas Siswa', icon: 'user'},
+            {id:'id_number',label:'NISN',type:'text'},
+	    {id:'id_NIPD',label:'NIPD',type:'text'},
+            {id:'name',label:'Nama Lengkap',type:'text'},
+            {id:'sub',label:'Kelas',type:'text'},
+            {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
+            {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
+            // Diubah jadi text untuk Link Google Drive
+            {id:'file_foto',label:'Link Foto Siswa (Drive)',type:'text'},
+            {id:'file_SD',label:'Link Ijasah SD (Drive)',type:'text'},
+            {id:'file_SMP',label:'Link Ijasah SMP (Drive)',type:'text'},
+            {id:'file_Akta',label:'Link Akta Lahir (Drive)',type:'text'},
+            {id:'file_kk',label:'Link Kartu Keluarga (Drive)',type:'text'},
+                                    
+            {section: 'Biodata Ayah', icon: 'user-check'},
+            {id:'ayah_status',label:'Status Ayah',type:'select',options:['Masih Hidup','Meninggal Dunia']},
+            {id:'ayah_nama',label:'Nama Lengkap Ayah',type:'text'},
+            {id:'ayah_ttl',label:'Tempat/tgl. Lahir',type:'text'},
+            {id:'ayah_agama',label:'Agama',type:'text'},
+            {id:'ayah_pekerjaan',label:'Pekerjaan',type:'text'},
+            {id:'ayah_gaji',label:'Penghasilan Perbulan',type:'select',options:gajiOptions},
+            {id:'ayah_alamat',label:'Alamat Rumah & Telp/HP',type:'text'},
+            {id:'ayah_desa',label:'Desa',type:'text'},
+	    {id:'ayah_kel',label:'Kelurahan/Kecamatan',type:'text'},
+            {id:'ayah_kab',label:'Kabupaten/Kotamadya',type:'text'},
+            {id:'ayah_prop',label:'Provinsi',type:'text'},
+
+            {section: 'Biodata Ibu', icon: 'heart'},
+            {id:'ibu_status',label:'Status Ibu',type:'select',options:['Masih Hidup','Meninggal Dunia']},
+            {id:'ibu_nama',label:'Nama Lengkap Ibu',type:'text'},
+            {id:'ibu_ttl',label:'Tempat/tgl. Lahir',type:'text'},
+            {id:'ibu_agama',label:'Agama',type:'text'},
+            {id:'ibu_pekerjaan',label:'Pekerjaan',type:'text'},
+            {id:'ibu_gaji',label:'Penghasilan Perbulan',type:'select',options:gajiOptions},
+            {id:'ibu_alamat',label:'Alamat Rumah & Telp/HP',type:'text'},
+            {id:'ibu_desa',label:'Desa',type:'text'},
+	    {id:'ibu_kel',label:'Kelurahan/Kecamatan',type:'text'},
+            {id:'ibu_kab',label:'Kabupaten/Kotamadya',type:'text'},
+            {id:'ibu_prop',label:'Provinsi',type:'text'},
+
+            {section: 'Biodata Wali (Opsional)', icon: 'shield-check'},
+            {id:'wali_status',label:'Status Wali',type:'text'},
+            {id:'wali_nama',label:'Nama Lengkap Wali',type:'text'},
+            {id:'wali_ttl',label:'Tempat/tgl. Lahir',type:'text'},
+            {id:'wali_agama',label:'Agama',type:'text'},
+            {id:'wali_pekerjaan',label:'Pekerjaan',type:'text'},
+            {id:'wali_gaji',label:'Penghasilan Perbulan',type:'select',options:gajiOptions},
+            {id:'wali_alamat',label:'Alamat Rumah & Telp/HP',type:'text'},
+            {id:'wali_desa',label:'Desa',type:'text'},
+	    {id:'wali_kel',label:'Kelurahan/Kecamatan',type:'text'},
+            {id:'wali_kab',label:'Kabupaten/Kotamadya',type:'text'},
+            {id:'wali_prop',label:'Provinsi',type:'text'},
+        ] 
+    },
+    guru: { 
+        label: 'Guru', 
+        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran','Tahun Masuk','Tahun Keluar', 'Arsip Digital'], 
+        fields: [
+            {section: 'Informasi Guru', icon: 'graduation-cap'},
+            {id:'id_number',label:'NIP/NUPTK',type:'text'},
+            {id:'name',label:'Nama Lengkap (Gelar)',type:'text'},
+            {id:'sub',label:'Mata Pelajaran Utama',type:'text'},
+            {id:'meta',label:'Status Kepegawaian',type:'select',options:['Tetap','Kontrak','Honor']},
+            {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
+            {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
+            // Diubah jadi text
+            {id:'file_photo',label:'Link Photo (Drive)',type:'text'},
+	    {id:'file_SK',label:'Link SK (Drive)',type:'text'},
+	    {id:'file_KTP',label:'Link KTP (Drive)',type:'text'},
+            {id:'file_ijazah',label:'Link Ijazah (Drive)',type:'text'},
+        ] 
+    },
+    guru_asrama: { 
+        label: 'Guru Asrama', 
+        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran','Tahun Masuk','Tahun Keluar', 'Arsip Digital'],
+        fields: [
+            {section: 'Informasi Guru Asrama', icon: 'home'},
+            {id:'id_number',label:'NIP/NUPTK',type:'text'},
+            {id:'name',label:'Nama Lengkap (Gelar)',type:'text'},
+            {id:'meta',label:'Status Kepegawaian',type:'select',options:['Tetap','Kontrak','Honor']},
+            {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
+            {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
+            // Diubah jadi text
+            {id:'file_photo',label:'Link Photo (Drive)',type:'text'},
+	    {id:'file_SK',label:'Link SK (Drive)',type:'text'},
+	    {id:'file_KTP',label:'Link KTP (Drive)',type:'text'},
+            {id:'file_ijazah',label:'Link Ijazah (Drive)',type:'text'},
+         ] 
+    },
+    staf: { 
+        label: 'Staf & Tenaga Lainnya', 
+        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran','Tahun Masuk','Tahun Keluar', 'Arsip Digital'], 
+        fields: [
+            {section: 'Informasi Staf', icon: 'user-cog'},
+            {id:'id_number',label:'NIK / No. Identitas',type:'text'},
+            {id:'name',label:'Nama Lengkap',type:'text'},
+            {id:'sub',label:'Bagian / Jabatan',type:'text'},
+            {id:'meta',label:'Status Kerja',type:'select',options:['Tetap','Kontrak']},
+            {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
+            {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
+            // Diubah jadi text
+            {id:'file_photo',label:'Link Photo (Drive)',type:'text'},
+	    {id:'file_SK',label:'Link SK (Drive)',type:'text'},
+	    {id:'file_KTP',label:'Link KTP (Drive)',type:'text'},
+            {id:'file_ijazah',label:'Link Ijazah (Drive)',type:'text'},
+        ] 
+    },
+    arsip: { 
+                label: 'Administrasi Surat', 
+                headers: ['Unit/Kebutuhan', 'No. Agenda', 'Perihal', 'Jenis', 'Tanggal Terbit', 'File'],
+                fields: [
+                    {section: 'Detail Surat', icon: 'mail'},
+                    {id:'Peruntukan',label:'Kebutuhan',type:'select',options:['SMP','SMA','Pesantren','Yayasan']},
+                    {id:'id_number',label:'Nomor Agenda',type:'text'}, 
+                    {id:'name',label:'Perihal',type:'text'},
+                    {id:'sub',label:'Jenis Surat',type:'select',options:['Masuk','Keluar','Keputusan']},
+                    {id:'meta',label:'Tanggal Terbit',type:'date'}, 
+                    // Nama label diganti agar lebih spesifik untuk dokumen kantor
+                    {
+                        id:'file_arsip',
+                        label:'Link Drive Dokumen (PDF/Doc/Xls)', 
+                        type:'text'
+                    }
+                ] 
+            },
+    inventaris: { 
+        label: 'Sarana Prasarana', 
+        headers: ['Kode', 'Nama Aset', 'Lokasi', 'Kondisi'], 
+        fields: [
+            {id:'id_number',label:'Kode Barang',type:'text'},
+            {id:'name',label:'Nama Barang',type:'text'},
+            {id:'sub',label:'Ruangan',type:'text'},
+            {id:'meta',label:'Kondisi',type:'select',options:['Baik','Rusak Ringan','Rusak Berat']}
+        ] 
+    }
+};
+
+        // 2. FIREBASE AUTH LOGIC (Pengganti Login Lama)
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            const errorMsg = document.getElementById('login-error');
+
+            btn.disabled = true;
+            btn.innerText = "MENGECEK...";
+            errorMsg.classList.add('hidden');
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                // Auth Observer di bawah akan menangani tampilan
+            } catch (error) {
+                console.error(error);
+                errorMsg.innerText = "Email atau Sandi Salah!";
+                errorMsg.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = "MASUK SISTEM";
+            }
+        };
+
+        // Satpam (Auth State Observer)
+        auth.onAuthStateChanged((user) => {
+            const loginPage = document.getElementById('login-page');
+            const mainApp = document.getElementById('main-app');
+
+            if (user) {
+                console.log("Sudah Login:", user.email);
+                loginPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                initSync();
+            } else {
+                loginPage.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                document.getElementById('login-btn').disabled = false;
+                document.getElementById('login-btn').innerText = "MASUK SISTEM";
+            }
+        });
+
+        window.logout = () => { 
+            if(confirm('Apakah  yakin ingin keluar?')) {
+                auth.signOut().then(() => location.reload());
+            }
+        };
+
+        // 3. DATA SYNC & DISPLAY LOGIC
+        function initSync() {
+            ['siswa', 'guru', 'staf', 'arsip', 'inventaris', 'guru_asrama'].forEach(tab => {
+                db.collection(tab).onSnapshot((snapshot) => {
+                    window.appData[tab] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    if (window.currentTab === tab) renderTable();
+                    renderStats();
+                });
+            });
+        }
+
+       window.renderTable = () => {
+    const head = document.getElementById('table-head');
+    const body = document.getElementById('table-body');
+    const empty = document.getElementById('empty-state');
+    
+    head.innerHTML = config[window.currentTab].headers.map(h => `<th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">${h}</th>`).join('') + `<th class="px-8 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest no-print">Aksi</th>`;
+
+    const data = window.appData[window.currentTab];
+    if (!data || data.length === 0) {
+        body.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');      
+
+    body.innerHTML = data.map((item) => {
+        let fileBadges = '';
+        
+        // Fungsi bantu buat nyari link di data Drive lo
+        const findLink = (obj, keyword) => {
+            const key = Object.keys(obj).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
+            return (key && obj[key]) ? obj[key] : null;
+        };
+
+        if (window.currentTab === 'arsip') {
+            fileBadges = renderFileBadge(item.file_arsip, 'BERKAS');
+        } else {
+            // 1. Ambil Foto
+            let badges = `${renderFileBadge(item.file_foto || item.file_photo || item.foto || findLink(item, 'foto'), 'FOTO')}`;
+
+            if (window.currentTab === 'siswa') {
+                // LOGIKA SISWA: KK, AKTA, SD, SMP
+                const linkAkta = findLink(item, 'akta');
+                const linkKK = findLink(item, 'kk') || findLink(item, 'keluarga');
+                const linkSD = findLink(item, 'sd');
+                const linkSMP = findLink(item, 'smp');
+
+                badges += `
+                    ${renderFileBadge(linkKK, 'KK')}
+                    ${renderFileBadge(linkAkta, 'AKTA')}
+                    ${renderFileBadge(linkSD, 'SD')}
+                    ${renderFileBadge(linkSMP, 'SMP')}
+                `;
+            } else {
+                // LOGIKA GURU/STAF/ASRAMA: SK, KTP, IJAZAH
+                const linkSK = findLink(item, 'sk');
+                const linkKTP = findLink(item, 'ktp');
+                const linkIjazah = findLink(item, 'ijazah');
+
+                badges += `
+                    ${renderFileBadge(linkSK, 'SK')}
+                    ${renderFileBadge(linkKTP, 'KTP')}
+                    ${renderFileBadge(linkIjazah, 'IJAZAH')}
+                `;
+            }
+            fileBadges = badges;
+        }
+
+        // Logic Kolom Otomatis
+        const col1 = window.currentTab === 'arsip' ? (item.Peruntukan || '-') : (item.id_number || '-'); // NISN
+        const col2 = window.currentTab === 'arsip' ? (item.id_number || '-') : (item.id_NIPD || '-');   // NIPD
+        const col3 = window.currentTab === 'arsip' ? (item.name || '-') : (item.name || '-');          // Nama
+        const col4 = window.currentTab === 'arsip' ? (item.sub || '-') : (item.sub || '-');           // Kelas
+        const col5 = window.currentTab === 'arsip' ? (item.meta || '-') : (item.thn_masuk || '-');    // Thn Masuk
+        const col6 = window.currentTab === 'arsip' ? '-' : (item.thn_keluar || '-');                  // Thn Keluar (TAMBAHAN)
+
+        return `
+            <tr class="hover:bg-sky-50/50 transition-all border-b border-slate-50">
+                <td class="px-8 py-5 font-mono text-xs text-sky-600 font-bold">${col1}</td>
+                <td class="px-8 py-5 text-slate-600 text-xs font-bold">${col2}</td>
+                <td class="px-8 py-5"><p class="font-bold text-slate-700">${col3}</p></td>
+                <td class="px-8 py-5 text-slate-500 text-xs">${col4}</td>
+                <td class="px-8 py-5 text-slate-600 text-xs font-bold">${col5}</td>
+                <td class="px-8 py-5 text-slate-600 text-xs font-bold">${col6}</td> 
+                <td class="px-8 py-5 min-w-[180px]">
+                    <div class="flex flex-row flex-wrap gap-1.5">${fileBadges}</div>
+                </td>
+                <td class="px-8 py-5 text-right space-x-1 no-print">
+                    <button onclick="editData('${item.id}')" class="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-100 rounded-xl transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                    <button onclick="deleteData('${item.id}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    lucide.createIcons();
+};
+
+        function renderFileBadge(url, label) {
+    // Bersihin link dari spasi tersembunyi
+    const cleanUrl = (url && typeof url === 'string') ? url.trim() : '';
+    
+    // Cek apakah beneran link (minimal ada http)
+    const hasFile = cleanUrl.toLowerCase().includes('http');
+
+    if (hasFile) {
+        return `
+            <span class="badge-doc bg-green-100 text-green-700 cursor-pointer hover:bg-green-200" 
+                  onclick="window.open('${cleanUrl}', '_blank')">
+                <i data-lucide="external-link" class="w-2.5 h-2.5"></i> ${label}
+            </span>`;
+    } else {
+        return `
+            <span class="badge-doc bg-red-50 text-red-300 opacity-50">
+                <i data-lucide="file-x" class="w-2.5 h-2.5"></i> ${label}
+            </span>`;
+    }
+}
+
+        window.renderStats = () => {
+            const stats = [
+                { label: 'Siswa', val: (window.appData.siswa || []).length, icon: 'users', color: 'text-sky-600', bg: 'bg-sky-50' },
+                { label: 'Guru & Staf', val: ((window.appData.guru || []).length + (window.appData.staf || []).length + (window.appData.guru_asrama || []).length), icon: 'award', color: 'text-yellow-600', bg: 'bg-yellow-50' },
+                { label: 'Surat', val: (window.appData.arsip || []).length, icon: 'file-text', color: 'text-blue-600', bg: 'bg-blue-50' },
+                { label: 'Aset', val: (window.appData.inventaris || []).length, icon: 'hard-drive', color: 'text-indigo-600', bg: 'bg-indigo-50' }
+            ];
+            document.getElementById('stats-grid').innerHTML = stats.map(s => `
+                <div class="card-stat bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5">
+                    <div class="${s.bg} ${s.color} p-4 rounded-2xl"><i data-lucide="${s.icon}" class="w-6 h-6"></i></div>
+                    <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${s.label}</p><p class="text-2xl font-black text-slate-800">${s.val}</p></div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        };
+
+        window.switchTab = (tab) => {
+            window.currentTab = tab;
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById(`btn-${tab}`)?.classList.add('active');
+            
+            const titles = { siswa: 'Data Siswa', guru: 'Data Guru', guru_asrama: 'Data Guru Asrama', staf: 'Data Staf & Pegawai', arsip: 'Administrasi Surat', inventaris: 'Sarana Prasarana', laporan: 'Laporan Berkala' };
+            document.getElementById('page-title').innerText = titles[tab] || 'Sistem Terpadu';
+            
+            const isLaporan = tab === 'laporan';
+            document.getElementById('laporan-section').className = isLaporan ? 'block space-y-8' : 'hidden';
+            document.getElementById('table-section').className = isLaporan ? 'hidden' : 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden';
+            
+            if (isLaporan) initCharts(); else renderTable();
+            lucide.createIcons();
+        };
+
+        window.openModal = (id = null) => {
+            const fieldsContainer = document.getElementById('form-fields');
+            const editId = document.getElementById('edit-id');
+            editId.value = id !== null ? id : '';
+            const item = id !== null ? window.appData[window.currentTab].find(i => i.id === id) : {};
+            fieldsContainer.innerHTML = '';
+            
+            config[window.currentTab].fields.forEach(f => {
+                if(f.section) {
+                    const sectionEl = document.createElement('div');
+                    sectionEl.className = "col-span-full form-section-title";
+                    sectionEl.innerHTML = `<i data-lucide="${f.icon}" class="w-4 h-4"></i> ${f.section}`;
+                    fieldsContainer.appendChild(sectionEl);
+                    return;
+                }
+                const val = item[f.id] || '';
+                const baseClass = "w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-yellow-400 outline-none transition-all text-xs font-bold text-slate-700";
+                let inputHtml = f.type === 'file' ? `<div class="file-input-wrapper mt-2"><button type="button" class="${baseClass} flex items-center gap-2 !bg-white"><i data-lucide="upload-cloud" class="w-3 h-3 text-sky-500"></i><span id="label-${f.id}" class="text-slate-400 truncate">${item[f.id+'_url'] ? 'Berkas Ada ✅' : 'Pilih Berkas...'}</span></button><input type="file" id="f-${f.id}" accept="${f.accept}" onchange="document.getElementById('label-${f.id}').innerText = this.files[0].name"></div>` : f.type === 'select' ? `<select id="f-${f.id}" class="${baseClass}">${f.options.map(o => `<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('')}</select>` : `<input type="${f.type}" id="f-${f.id}" value="${val}" class="${baseClass}" placeholder="Masukkan ${f.label}">`;
+                const fieldDiv = document.createElement('div');
+                fieldDiv.innerHTML = `<label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">${f.label}</label>${inputHtml}`;
+                fieldsContainer.appendChild(fieldDiv);
+            });
+
+            document.getElementById('modal').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
+        window.editData = (id) => openModal(id);
+        window.deleteData = async (id) => { if (confirm('Hapus data ini?')) await db.collection(window.currentTab).doc(id).delete(); };
+
+        document.getElementById('main-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-btn');
+            const id = document.getElementById('edit-id').value;
+            const entry = {};
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Menyimpan...`;
+
+            try {
+                // Loop semua field berdasarkan config yang sudah kita ubah tadi
+                for (const f of config[window.currentTab].fields.filter(f => !f.section)) {
+                    const el = document.getElementById(`f-${f.id}`);
+                    if (el) {
+                        // Langsung ambil nilainya (baik itu teks biasa atau link Drive)
+                        entry[f.id] = el.value;
+                    }
+                }
+
+                // Simpan ke Firestore
+                if (id) {
+                    await db.collection(window.currentTab).doc(id).update(entry);
+                } else {
+                    await db.collection(window.currentTab).add(entry);
+                }
+
+                closeModal();
+                // Opsional: Kasih feedback kalau berhasil
+                console.log("Data berhasil masuk ke Firestore!");
+            } catch(e) { 
+                alert("Gagal menyimpan: " + e.message); 
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="cloud-upload" class="w-4 h-4 text-yellow-300"></i> Simpan Data`;
+            lucide.createIcons(); // Re-render icon biar tetep muncul
+        };
+        window.exportToExcel = () => {
+            const data = window.appData[window.currentTab];
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "DATA");
+            XLSX.writeFile(wb, `ABROR_${window.currentTab.toUpperCase()}.xlsx`);
+        };
+
+        window.filterData = () => {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            document.querySelectorAll('#table-body tr').forEach(row => row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none');
+        };
+
+        window.onload = () => lucide.createIcons();
+
+window.initCharts = () => {
+    const el = document.getElementById('attendanceChart');
+    if (!el) return;
+
+    // --- BAGIAN PERAPI KOTAK ---
+    const container = el.parentElement;
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.justifyContent = "center";
+    container.style.height = "250px"; // Kunci tinggi kotak putihnya
+    container.style.padding = "20px";
+
+    if (window.myChart) window.myChart.destroy();
+    window.myChart = new Chart(el, {
+        type: 'doughnut',
+        data: {
+            labels: ['Siswa', 'SDM', 'Surat', 'Aset'],
+            datasets: [{
+                data: [window.appData.siswa.length, (window.appData.guru.length + window.appData.staf.length), window.appData.arsip.length, window.appData.inventaris.length],
+                backgroundColor: ['#0ea5e9', '#facc15', '#3b82f6', '#10b981'],
+                borderWidth: 0
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: true, // Ubah jadi true biar tetep bulat sempurna
+            plugins: { legend: { display: false } }
+        }
+    });
+};
+    </script>
+</body>
+</html>
