@@ -1,0 +1,16 @@
+{
+  "short_name": "Portal IBS",
+  "name": "Sistem Terpadu Darul Abror IBS",
+  "icons": [
+  {
+    "src": "favicon.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }
+],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0088cc",
+  "background_color": "#ffffff"
+}
