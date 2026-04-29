@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -416,58 +416,53 @@
             {id:'wali_prop',label:'Provinsi',type:'text'},
         ] 
     },
-    guru: { 
+   guru: { 
         label: 'Guru', 
-        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran','Tahun Masuk','Tahun Keluar', 'Arsip Digital'], 
+        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran', 'Status Kerja', 'Thn Masuk', 'Thn Keluar', 'Arsip'], 
         fields: [
-            {section: 'Informasi Guru', icon: 'graduation-cap'},
-            {id:'id_number',label:'NIP/NUPTK',type:'text'},
-            {id:'name',label:'Nama Lengkap (Gelar)',type:'text'},
-            {id:'sub',label:'Mata Pelajaran Utama',type:'text'},
-            {id:'meta',label:'Status Kepegawaian',type:'select',options:['Tetap','Kontrak','Honor']},
-            {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
-            {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
-            // Diubah jadi text
-            {id:'file_photo',label:'Link Photo (Drive)',type:'text'},
-	    {id:'file_SK',label:'Link SK (Drive)',type:'text'},
-	    {id:'file_KTP',label:'Link KTP (Drive)',type:'text'},
-            {id:'file_ijazah',label:'Link Ijazah (Drive)',type:'text'},
+            {id:'id_number', label:'NIP/NUPTK', type:'text'},
+            {id:'name', label:'Nama Lengkap', type:'text'},
+            {id:'sub', label:'Mata Pelajaran', type:'text'},
+            {id:'meta', label:'Status Kerja', type:'select', options:['Tetap','Honor']},
+            {id:'thn_masuk', label:'Tahun Masuk', type:'number'},
+            {id:'thn_keluar', label:'Tahun Keluar', type:'number'},
+            {id:'file_photo', label:'Link Photo (Drive)', type:'text'},
+            {id:'file_SK', label:'Link SK (Drive)', type:'text'},
+            {id:'file_KTP', label:'Link KTP (Drive)', type:'text'},
+            {id:'file_ijazah', label:'Link Ijazah (Drive)', type:'text'},
         ] 
     },
     guru_asrama: { 
         label: 'Guru Asrama', 
-        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran','Tahun Masuk','Tahun Keluar', 'Arsip Digital'],
+        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Tugas/Bagian', 'Status', 'Thn Masuk', 'Thn Keluar', 'Arsip'],
         fields: [
-            {section: 'Informasi Guru Asrama', icon: 'home'},
-            {id:'id_number',label:'NIP/NUPTK',type:'text'},
-            {id:'name',label:'Nama Lengkap (Gelar)',type:'text'},
-            {id:'meta',label:'Status Kepegawaian',type:'select',options:['Tetap','Kontrak','Honor']},
+            {id:'id_number', label:'NIP/NUPTK', type:'text'},
+            {id:'name', label:'Nama Lengkap (Gelar)', type:'text'},
+            {id:'sub', label:'Tugas Asrama', type:'text'}, // Tambah ini biar gak geser
+            {id:'meta', label:'Status', type:'select', options:['Tetap','Kontrak','Honor']},
             {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
             {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
-            // Diubah jadi text
-            {id:'file_photo',label:'Link Photo (Drive)',type:'text'},
-	    {id:'file_SK',label:'Link SK (Drive)',type:'text'},
-	    {id:'file_KTP',label:'Link KTP (Drive)',type:'text'},
-            {id:'file_ijazah',label:'Link Ijazah (Drive)',type:'text'},
+            {id:'file_photo', label:'Link Photo (Drive)', type:'text'},
+            {id:'file_SK', label:'Link SK (Drive)', type:'text'},
+            {id:'file_KTP', label:'Link KTP (Drive)', type:'text'},
+            {id:'file_ijazah', label:'Link Ijazah (Drive)', type:'text'},
          ] 
     },
     staf: { 
         label: 'Staf & Tenaga Lainnya', 
-        headers: ['NIP/NUPTK', 'Nama Lengkap', 'Mata Pelajaran','Tahun Masuk','Tahun Keluar', 'Arsip Digital'], 
+        headers: ['NIK/NIP', 'Nama Lengkap', 'Bagian', 'Status', 'Thn Masuk', 'Thn Keluar', 'Arsip'], 
         fields: [
-            {section: 'Informasi Staf', icon: 'user-cog'},
-            {id:'id_number',label:'NIK / No. Identitas',type:'text'},
-            {id:'name',label:'Nama Lengkap',type:'text'},
-            {id:'sub',label:'Bagian / Jabatan',type:'text'},
-            {id:'meta',label:'Status Kerja',type:'select',options:['Tetap','Kontrak']},
-            {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
-            {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
-            // Diubah jadi text
-            {id:'file_photo',label:'Link Photo (Drive)',type:'text'},
-	    {id:'file_SK',label:'Link SK (Drive)',type:'text'},
-	    {id:'file_KTP',label:'Link KTP (Drive)',type:'text'},
-            {id:'file_ijazah',label:'Link Ijazah (Drive)',type:'text'},
-        ] 
+            {id:'id_number', label:'NIK / No. Identitas', type:'text'}, 
+            {id:'name', label:'Nama Lengkap', type:'text'}, 
+            {id:'sub', label:'Bagian / Jabatan', type:'text'}, 
+            {id:'meta', label:'Status Kerja', type:'select', options:['Tetap','Kontrak']},
+            {id:'thn_masuk', label:'Tahun Masuk', type:'number'},
+            {id:'thn_keluar', label:'Tahun Keluar', type:'number'},
+            {id:'file_photo', label:'Link Photo (Drive)', type:'text'},
+            {id:'file_SK', label:'Link SK (Drive)', type:'text'},
+            {id:'file_KTP', label:'Link KTP (Drive)', type:'text'},
+            {id:'file_ijazah', label:'Link Ijazah (Drive)', type:'text'},
+        ]
     },
     arsip: { 
                 label: 'Administrasi Surat', 
@@ -616,22 +611,42 @@
             fileBadges = badges;
         }
 
-        // Logic Kolom Otomatis
-        const col1 = window.currentTab === 'arsip' ? (item.Peruntukan || '-') : (item.id_number || '-'); // NISN
-        const col2 = window.currentTab === 'arsip' ? (item.id_number || '-') : (item.id_NIPD || '-');   // NIPD
-        const col3 = window.currentTab === 'arsip' ? (item.name || '-') : (item.name || '-');          // Nama
-        const col4 = window.currentTab === 'arsip' ? (item.sub || '-') : (item.sub || '-');           // Kelas
-        const col5 = window.currentTab === 'arsip' ? (item.meta || '-') : (item.thn_masuk || '-');    // Thn Masuk
-        const col6 = window.currentTab === 'arsip' ? '-' : (item.thn_keluar || '-');                  // Thn Keluar (TAMBAHAN)
+       let cols = [];
+        
+        if (window.currentTab === 'arsip') {
+            cols = [
+                item.Peruntukan || '-',
+                item.id_number || '-',
+                item.name || '-',
+                item.sub || '-',
+                item.meta || '-',
+                '-' // Kolom kosong biar sinkron sama header
+            ];
+        } else if (window.currentTab === 'siswa') {
+            // Khusus Siswa: Ada NIK/NISN dan NIPD
+            cols = [
+                item.id_number || '-', // Kolom 1: NISN
+                item.id_NIPD || '-',   // Kolom 2: NIPD
+                item.name || '-',      // Kolom 3: Nama
+                item.sub || '-',       // Kolom 4: Kelas
+                item.thn_masuk || '-', // Kolom 5: Thn Masuk
+                item.thn_keluar || '-' // Kolom 6: Thn Keluar
+            ];
+        } else {
+            // Buat Guru, Guru Asrama, dan Staf
+            cols = [
+                item.id_number || '-', // Kolom 1: NIK/NIP
+                item.name || '-',      // Kolom 2: Nama Lengkap
+                item.sub || '-',       // Kolom 3: Bagian/Mapel
+                item.meta || '-',      // Kolom 4: Status Kerja
+                item.thn_masuk || '-', // Kolom 5: Thn Masuk
+                item.thn_keluar || '-' // Kolom 6: Thn Keluar
+            ];
+        }
 
         return `
             <tr class="hover:bg-sky-50/50 transition-all border-b border-slate-50">
-                <td class="px-8 py-5 font-mono text-xs text-sky-600 font-bold">${col1}</td>
-                <td class="px-8 py-5 text-slate-600 text-xs font-bold">${col2}</td>
-                <td class="px-8 py-5"><p class="font-bold text-slate-700">${col3}</p></td>
-                <td class="px-8 py-5 text-slate-500 text-xs">${col4}</td>
-                <td class="px-8 py-5 text-slate-600 text-xs font-bold">${col5}</td>
-                <td class="px-8 py-5 text-slate-600 text-xs font-bold">${col6}</td> 
+                ${cols.map(content => `<td class="px-8 py-5 text-slate-600 text-xs font-bold">${content}</td>`).join('')}
                 <td class="px-8 py-5 min-w-[180px]">
                     <div class="flex flex-row flex-wrap gap-1.5">${fileBadges}</div>
                 </td>
