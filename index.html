@@ -369,6 +369,7 @@
             {id:'sub',label:'Kelas',type:'text'},
             {id: 'thn_masuk', label: 'Tahun Masuk', type: 'number'},
             {id: 'thn_keluar', label: 'Tahun Keluar', type: 'number'},
+	    {id: 'status_aktif', label: 'Status Siswa', type: 'select', options: ['Aktif', 'Non-Aktif']},
             // Diubah jadi text untuk Link Google Drive
             {id:'file_foto',label:'Link Foto Siswa (Drive)',type:'text'},
             {id:'file_SD',label:'Link Ijasah SD (Drive)',type:'text'},
@@ -380,7 +381,6 @@
             {id:'ayah_status',label:'Status Ayah',type:'select',options:['Masih Hidup','Meninggal Dunia']},
             {id:'ayah_nama',label:'Nama Lengkap Ayah',type:'text'},
             {id:'ayah_ttl',label:'Tempat/tgl. Lahir',type:'text'},
-            {id:'ayah_agama',label:'Agama',type:'text'},
             {id:'ayah_pekerjaan',label:'Pekerjaan',type:'text'},
             {id:'ayah_gaji',label:'Penghasilan Perbulan',type:'select',options:gajiOptions},
             {id:'ayah_alamat',label:'Alamat Rumah & Telp/HP',type:'text'},
@@ -393,7 +393,6 @@
             {id:'ibu_status',label:'Status Ibu',type:'select',options:['Masih Hidup','Meninggal Dunia']},
             {id:'ibu_nama',label:'Nama Lengkap Ibu',type:'text'},
             {id:'ibu_ttl',label:'Tempat/tgl. Lahir',type:'text'},
-            {id:'ibu_agama',label:'Agama',type:'text'},
             {id:'ibu_pekerjaan',label:'Pekerjaan',type:'text'},
             {id:'ibu_gaji',label:'Penghasilan Perbulan',type:'select',options:gajiOptions},
             {id:'ibu_alamat',label:'Alamat Rumah & Telp/HP',type:'text'},
@@ -406,7 +405,6 @@
             {id:'wali_status',label:'Status Wali',type:'text'},
             {id:'wali_nama',label:'Nama Lengkap Wali',type:'text'},
             {id:'wali_ttl',label:'Tempat/tgl. Lahir',type:'text'},
-            {id:'wali_agama',label:'Agama',type:'text'},
             {id:'wali_pekerjaan',label:'Pekerjaan',type:'text'},
             {id:'wali_gaji',label:'Penghasilan Perbulan',type:'select',options:gajiOptions},
             {id:'wali_alamat',label:'Alamat Rumah & Telp/HP',type:'text'},
@@ -560,7 +558,49 @@
     
     head.innerHTML = config[window.currentTab].headers.map(h => `<th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">${h}</th>`).join('') + `<th class="px-8 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest no-print">Aksi</th>`;
 
-    const data = window.appData[window.currentTab];
+    // --- LOGIKA SPLIT DATA + COUNTER START ---
+    let data = [...(window.appData[window.currentTab] || [])];
+    
+    if (window.currentTab === 'siswa') {
+        if(!window.filterSiswa) window.filterSiswa = 'Aktif';
+
+        // Hitung jumlah untuk label tombol
+        const jmlAktif = data.filter(s => (s.status_aktif || 'Aktif') === 'Aktif').length;
+        const jmlNon = data.filter(s => (s.status_aktif || 'Aktif') === 'Non-Aktif').length;
+
+        // Filter data yang tampil di tabel
+        data = data.filter(item => {
+            const status = item.status_aktif || 'Aktif';
+            return status === window.filterSiswa;
+        });
+
+        // Bar filter dengan Counter
+        const filterHtml = `
+            <div id="siswa-filter-bar" class="px-8 py-4 flex items-center justify-between bg-slate-50/50 border-b border-slate-100 no-print">
+                <div class="flex gap-2">
+                    <button onclick="window.filterSiswa='Aktif'; renderTable()" 
+                        class="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${window.filterSiswa === 'Aktif' ? 'bg-sky-600 text-white shadow-lg shadow-sky-100' : 'bg-white text-slate-400 border border-slate-200'}">
+                        Siswa Aktif (${jmlAktif})
+                    </button>
+                    <button onclick="window.filterSiswa='Non-Aktif'; renderTable()" 
+                        class="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${window.filterSiswa === 'Non-Aktif' ? 'bg-rose-600 text-white shadow-lg shadow-rose-100' : 'bg-white text-slate-400 border border-slate-200'}">
+                        Non-Aktif (${jmlNon})
+                    </button>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60">
+                    Total: ${jmlAktif + jmlNon} Jiwa
+                </div>
+            </div>
+        `;
+        
+        const tableContainer = document.querySelector('#table-section .overflow-x-auto');
+        document.getElementById('siswa-filter-bar')?.remove();
+        tableContainer.insertAdjacentHTML('beforebegin', filterHtml);
+    } else {
+        document.getElementById('siswa-filter-bar')?.remove();
+    }
+    // --- LOGIKA SPLIT DATA + COUNTER END ---
+
     if (!data || data.length === 0) {
         body.innerHTML = '';
         empty.classList.remove('hidden');
@@ -570,8 +610,6 @@
 
     body.innerHTML = data.map((item) => {
         let fileBadges = '';
-        
-        // Fungsi bantu buat nyari link di data Drive lo
         const findLink = (obj, keyword) => {
             const key = Object.keys(obj).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
             return (key && obj[key]) ? obj[key] : null;
@@ -580,68 +618,31 @@
         if (window.currentTab === 'arsip') {
             fileBadges = renderFileBadge(item.file_arsip, 'BERKAS');
         } else {
-            // 1. Ambil Foto
             let badges = `${renderFileBadge(item.file_foto || item.file_photo || item.foto || findLink(item, 'foto'), 'FOTO')}`;
-
             if (window.currentTab === 'siswa') {
-                // LOGIKA SISWA: KK, AKTA, SD, SMP
-                const linkAkta = findLink(item, 'akta');
-                const linkKK = findLink(item, 'kk') || findLink(item, 'keluarga');
-                const linkSD = findLink(item, 'sd');
-                const linkSMP = findLink(item, 'smp');
-
                 badges += `
-                    ${renderFileBadge(linkKK, 'KK')}
-                    ${renderFileBadge(linkAkta, 'AKTA')}
-                    ${renderFileBadge(linkSD, 'SD')}
-                    ${renderFileBadge(linkSMP, 'SMP')}
+                    ${renderFileBadge(findLink(item, 'kk') || findLink(item, 'keluarga'), 'KK')}
+                    ${renderFileBadge(findLink(item, 'akta'), 'AKTA')}
+                    ${renderFileBadge(findLink(item, 'sd'), 'SD')}
+                    ${renderFileBadge(findLink(item, 'smp'), 'SMP')}
                 `;
             } else {
-                // LOGIKA GURU/STAF/ASRAMA: SK, KTP, IJAZAH
-                const linkSK = findLink(item, 'sk');
-                const linkKTP = findLink(item, 'ktp');
-                const linkIjazah = findLink(item, 'ijazah');
-
                 badges += `
-                    ${renderFileBadge(linkSK, 'SK')}
-                    ${renderFileBadge(linkKTP, 'KTP')}
-                    ${renderFileBadge(linkIjazah, 'IJAZAH')}
+                    ${renderFileBadge(findLink(item, 'sk'), 'SK')}
+                    ${renderFileBadge(findLink(item, 'ktp'), 'KTP')}
+                    ${renderFileBadge(findLink(item, 'ijazah'), 'IJAZAH')}
                 `;
             }
             fileBadges = badges;
         }
 
-       let cols = [];
-        
+        let cols = [];
         if (window.currentTab === 'arsip') {
-            cols = [
-                item.Peruntukan || '-',
-                item.id_number || '-',
-                item.name || '-',
-                item.sub || '-',
-                item.meta || '-',
-                '-' // Kolom kosong biar sinkron sama header
-            ];
+            cols = [item.Peruntukan || '-', item.id_number || '-', item.name || '-', item.sub || '-', item.meta || '-', '-'];
         } else if (window.currentTab === 'siswa') {
-            // Khusus Siswa: Ada NIK/NISN dan NIPD
-            cols = [
-                item.id_number || '-', // Kolom 1: NISN
-                item.id_NIPD || '-',   // Kolom 2: NIPD
-                item.name || '-',      // Kolom 3: Nama
-                item.sub || '-',       // Kolom 4: Kelas
-                item.thn_masuk || '-', // Kolom 5: Thn Masuk
-                item.thn_keluar || '-' // Kolom 6: Thn Keluar
-            ];
+            cols = [item.id_number || '-', item.id_NIPD || '-', item.name || '-', item.sub || '-', item.thn_masuk || '-', item.thn_keluar || '-'];
         } else {
-            // Buat Guru, Guru Asrama, dan Staf
-            cols = [
-                item.id_number || '-', // Kolom 1: NIK/NIP
-                item.name || '-',      // Kolom 2: Nama Lengkap
-                item.sub || '-',       // Kolom 3: Bagian/Mapel
-                item.meta || '-',      // Kolom 4: Status Kerja
-                item.thn_masuk || '-', // Kolom 5: Thn Masuk
-                item.thn_keluar || '-' // Kolom 6: Thn Keluar
-            ];
+            cols = [item.id_number || '-', item.name || '-', item.sub || '-', item.meta || '-', item.thn_masuk || '-', item.thn_keluar || '-'];
         }
 
         return `
